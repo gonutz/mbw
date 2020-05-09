@@ -3,8 +3,10 @@ package mbw
 import (
 	"encoding/binary"
 	"errors"
+	"image"
 	"io"
 	"os"
+	"sort"
 )
 
 // NewFont creates a new font in which every character is width by height pixels
@@ -45,6 +47,27 @@ func (f *Font) Letter(r rune) *Letter {
 	}
 	f.letters = append(f.letters, newLetter(r, f.width, f.height))
 	return &f.letters[len(f.letters)-1]
+}
+
+// Sort sorts the letters by their characters, from lowest to highest.
+func (f *Font) Sort() {
+	sort.Sort(sortable{f})
+}
+
+type sortable struct {
+	*Font
+}
+
+func (x sortable) Len() int {
+	return len(x.letters)
+}
+
+func (x sortable) Less(i, j int) bool {
+	return x.letters[i].Rune < x.letters[j].Rune
+}
+
+func (x sortable) Swap(i, j int) {
+	x.letters[i], x.letters[j] = x.letters[j], x.letters[i]
 }
 
 func newLetter(r rune, width, height int) Letter {
@@ -202,4 +225,13 @@ type fileHeader struct {
 	FontWidth   uint16
 	FontHeight  uint16
 	LetterCount uint64
+}
+
+func ToGlyphAtlas(font *Font) *GlyphAtlas {
+	// TODO
+	return &GlyphAtlas{}
+}
+
+type GlyphAtlas struct {
+	Image *image.Gray
 }
